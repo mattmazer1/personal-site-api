@@ -17,15 +17,26 @@ app.get("/test", (req, res) => {
 	res.send("Connected");
 });
 
-app.get("/active/user", (req, res) => {
+app.post("/post/active/user", (req, res) => {
 	try {
+		let data = req.body.data;
+		let ip = data.ip;
+		let time = data.time;
+		let date = data.date;
+
 		totalVisits++;
-		console.log(totalVisits);
 
-		res.send(`Someone visited your site! Location:${req.ip} Time:${req.time}`);
+		console.log(`Total site visits: ${totalVisits}`);
 
-		res.send(`Total site visits: ${totalVisits}`);
+		res.send(
+			`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
+		);
+
+		console.log(
+			`Someone visited your site! Location:${ip} Date:${date} Time:${time}`
+		);
 	} catch (err) {
+		res.status(500).json({ message: err.message });
 		console.log(err);
 	}
 });
