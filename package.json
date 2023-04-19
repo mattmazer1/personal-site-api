@@ -2,10 +2,11 @@
 	"name": "v2-site-backend",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"main": "dist/server.js",
 	"scripts": {
-		"start": "tsc && nodemon server.js",
-		"devStart": "nodemon dist/server.js"
+		"start": "tsc && nodemon dist/server.js",
+		"devStart": "nodemon dist/server.js",
+		"lint": "eslint . --ext .ts"
 	},
 	"repository": {
 		"type": "git",

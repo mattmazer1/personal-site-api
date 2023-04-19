@@ -18,7 +18,7 @@ app.get("/test", (res: Response) => {
 	res.send("Connected");
 });
 
-app.post("/post/active/user", (req: Request, res: Response) => {
+app.post("/testing", (req: Request, res: Response) => {
 	try {
 		const data = req.body.data; // need to add type
 		const ip: string = data.ip;
@@ -36,6 +36,7 @@ app.post("/post/active/user", (req: Request, res: Response) => {
 		console.log(
 			`Someone visited your site! Location:${ip} Date:${date} Time:${time}`
 		);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		res.status(500).json({ message: err.message });
 		console.log(err);
