@@ -13,9 +13,15 @@ interface UserData {
 	time: string;
 	date: string;
 }
+interface ResObj {
+	status: string;
+}
+interface ResCheck {
+	action: string;
+}
 
-const resObj = { status: "200" };
-const resCheck = { action: "no action" };
+const resObj: ResObj = { status: "200" };
+const resCheck: ResCheck = { action: "no action" };
 
 let totalVisits = 0;
 let storeData: UserData | null = null;
@@ -59,6 +65,19 @@ app.post("/get/active/user", (req: Request, res: Response) => {
 			`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
 		);
 		storeData = data;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	} catch (err: any) {
+		res.status(500).json({ message: err.message });
+		console.log(err);
+	}
+});
+
+app.get("/get/data", async (req: Request, res: Response) => {
+	try {
+		const queryInfo = ``;
+		const { rows } = await client.query(queryInfo);
+		res.send(rows);
+		console.log(rows);
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		res.status(500).json({ message: err.message });
