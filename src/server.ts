@@ -84,3 +84,11 @@ app.get("/get/data", async (req: Request, res: Response) => {
 		console.log(err);
 	}
 });
+
+/*
+SELECT JSON_OBJECT('items', 
+       JSON_ARRAYAGG(JSON_OBJECT('data', 
+           JSON_OBJECT('ip', ip, 'time', time, 'date', date)
+       ))) 
+FROM your_table;
+*/
