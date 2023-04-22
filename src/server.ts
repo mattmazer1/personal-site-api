@@ -1,7 +1,7 @@
-// require("dotenv").config();
 import express from "express";
 import { Request, Response } from "express";
 import cors from "cors";
+import { client } from "./db/db";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,8 +34,7 @@ app.get("/test", (res: Response) => {
 	res.send("Connected");
 });
 
-app.post("/get/active/user", (req: Request, res: Response) => {
-	//change post to get?
+app.post("/post/active/user", async (req: Request, res: Response) => {
 	try {
 		const data = req.body.data; // need to add type
 		const ip: string = data.ip;
@@ -55,7 +54,7 @@ app.post("/get/active/user", (req: Request, res: Response) => {
 
 		console.log(`Total site visits: ${totalVisits}`);
 
-		res.status(200).json(resObj);
+		res.status(200).json(resObj); //move this to after query?
 		// res.json(resObj);
 		// res.send(
 		// 	`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
@@ -65,6 +64,15 @@ app.post("/get/active/user", (req: Request, res: Response) => {
 			`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
 		);
 		storeData = data;
+
+		const values = [ip, time, date];
+		const postInfo = `INSERT INTO data(ip,time,date) 
+ 		VALUES($1, $2, $3);`;
+
+		await client.query(postInfo, values);
+		client.end();
+		console.log("Data entry was successful!");
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		res.status(500).json({ message: err.message });
@@ -72,23 +80,23 @@ app.post("/get/active/user", (req: Request, res: Response) => {
 	}
 });
 
-app.get("/get/data", async (req: Request, res: Response) => {
+app.get("/get/data", async (res: Response) => {
 	try {
-		const queryInfo = ``;
-		const { rows } = await client.query(queryInfo);
-		res.send(rows);
-		console.log(rows);
+		const queryInfo = `
+		SELECT json_build_object('items', 
+        json_agg(json_build_object('data', 
+        json_build_object('ip', ip, 'time', time, 'date', date)
+        ))) FROM (SELECT ip, time, date
+		FROM data ORDER BY id DESC) subquery;`;
+
+		const data = await client.query(queryInfo);
+		res.send(data);
+		console.log(data);
+		client.end();
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		res.status(500).json({ message: err.message });
 		console.log(err);
 	}
 });
-
-/*
-SELECT JSON_OBJECT('items', 
-       JSON_ARRAYAGG(JSON_OBJECT('data', 
-           JSON_OBJECT('ip', ip, 'time', time, 'date', date)
-       ))) 
-FROM your_table;
-*/

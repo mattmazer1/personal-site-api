@@ -1,7 +1,7 @@
 {
 	"name": "v2-site-backend",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Backend for my personal site",
 	"main": "dist/server.js",
 	"scripts": {
 		"start": "tsc && nodemon dist/server.js",
@@ -13,7 +13,7 @@
 		"url": "git+https://github.com/mattmazer1/v2-site-server.git"
 	},
 	"keywords": [],
-	"author": "",
+	"author": "Matt Mazer",
 	"license": "ISC",
 	"bugs": {
 		"url": "https://github.com/mattmazer1/v2-site-server/issues"
@@ -22,13 +22,15 @@
 	"dependencies": {
 		"cors": "^2.8.5",
 		"express": "^4.18.2",
-		"twilio": "^4.10.0"
+		"pg": "^8.10.0"
 	},
 	"devDependencies": {
 		"@types/cors": "^2.8.13",
 		"@types/express": "^4.17.17",
+		"@types/pg": "^8.6.6",
 		"@typescript-eslint/eslint-plugin": "^5.59.0",
 		"@typescript-eslint/parser": "^5.59.0",
+		"dotenv": "^16.0.3",
 		"eslint": "^8.38.0",
 		"nodemon": "^2.0.22",
 		"typescript": "^5.0.4"
