@@ -8,11 +8,11 @@ const pg_1 = require("pg");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const client = new pg_1.Client({
-    host: process.env.HOST,
-    port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
-    database: process.env.DATABASE,
-    user: "postgresss",
-    password: process.env.PASSWORD,
+    host: process.env.PGHOST,
+    port: process.env.PGPORT ? parseInt(process.env.PGPORT) : undefined,
+    database: process.env.PGDATABASE,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
 });
 exports.client = client;
 client.connect((err) => {

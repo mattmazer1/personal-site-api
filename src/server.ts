@@ -70,7 +70,6 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
  		VALUES($1, $2, $3);`;
 
 		await client.query(postInfo, values);
-		client.end();
 		console.log("Data entry was successful!");
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,7 +79,7 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 	}
 });
 
-app.get("/get/data", async (res: Response) => {
+app.get("/get/data", async (_req: Request, res: Response) => {
 	try {
 		const queryInfo = `
 		SELECT json_build_object('items', 
@@ -89,14 +88,27 @@ app.get("/get/data", async (res: Response) => {
         ))) FROM (SELECT ip, time, date
 		FROM data ORDER BY id DESC) subquery;`;
 
-		const data = await client.query(queryInfo);
-		res.send(data);
-		console.log(data);
-		client.end();
+		const { rows } = await client.query(queryInfo);
+		res.send(rows[0].json_build_object);
+		console.log(rows);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
 		res.status(500).json({ message: err.message });
 		console.log(err);
 	}
+});
+
+// Listen for the SIGTERM signal and gracefully shut down the application
+process.on("SIGTERM", async () => {
+	console.log("Shutting down server and client connection");
+	await client.end();
+	process.exit(0);
+});
+
+// Listen for the SIGINT signal and gracefully shut down the application
+process.on("SIGINT", async () => {
+	console.log("Shutting down server and client connection");
+	await client.end();
+	process.exit(0);
 });

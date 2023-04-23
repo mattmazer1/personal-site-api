@@ -55,7 +55,18 @@ app.post("/post/active/user", async (req, res) => {
         console.log(err);
     }
 });
-app.get("/get/data", async (res) => {
+const connectDB = async (_req, res, next) => {
+    try {
+        await db_1.client.connect(); // Open connection
+        await next(); // Pass control to route handler
+        await db_1.client.end(); // Close connection
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+    }
+};
+app.get("/get/data", connectDB, async (_req, res) => {
     try {
         const queryInfo = `
 		SELECT json_build_object('items', 
@@ -63,10 +74,10 @@ app.get("/get/data", async (res) => {
         json_build_object('ip', ip, 'time', time, 'date', date)
         ))) FROM (SELECT ip, time, date
 		FROM data ORDER BY id DESC) subquery;`;
-        const data = await db_1.client.query(queryInfo);
-        res.send(data);
-        console.log(data);
-        db_1.client.end();
+        const { rows } = await db_1.client.query(queryInfo);
+        res.send(rows[0].json_build_object);
+        console.log(rows);
+        // client.end();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
