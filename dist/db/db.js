@@ -11,14 +11,16 @@ const client = new pg_1.Client({
     host: process.env.HOST,
     port: process.env.PORT ? parseInt(process.env.PORT) : undefined,
     database: process.env.DATABASE,
-    user: process.env.USER,
+    user: "postgresss",
     password: process.env.PASSWORD,
 });
 exports.client = client;
 client.connect((err) => {
     const customError = new Error("DB connection failed");
-    if (err)
+    if (err) {
+        customError.message = err.message;
         throw customError;
+    }
     else
         console.log("DB connected");
 });
