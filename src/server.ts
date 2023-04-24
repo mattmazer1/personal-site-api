@@ -28,13 +28,12 @@ app.get("/test", (res: Response) => {
 
 app.post("/post/active/user", async (req: Request, res: Response) => {
 	try {
-		const data = req.body.data; // need to add type and make object?
+		const data = req.body.data;
 		const ip: string = data.ip;
 		const time: string = data.time;
 		const date: string = data.date;
 
 		console.log(data);
-		console.log(storeData);
 
 		if (JSON.stringify(data) === JSON.stringify(storeData)) {
 			res.status(200).json(resCheck);
@@ -42,15 +41,6 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 			return;
 		}
 
-		res.status(200).json(resObj); //move this to after query?
-		// res.json(resObj);
-		// res.send(
-		// 	`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
-		// );
-
-		console.log(
-			`Someone visited your site! Location:${ip} Date:${date} Time:${time}`
-		);
 		storeData = data;
 
 		const values = [ip, time, date];
@@ -59,6 +49,7 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 
 		await client.query(postInfo, values);
 		console.log("Data entry was successful!");
+		res.status(200).json(resObj);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
@@ -77,7 +68,7 @@ app.get("/get/data", async (_req: Request, res: Response) => {
 		FROM data ORDER BY id DESC) subquery;`;
 
 		const { rows } = await client.query(queryInfo);
-		res.send(rows[0].json_build_object);
+		res.status(200).json(resObj);
 		console.log(rows[0].json_build_object.items);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,14 +81,14 @@ app.get("/get/data", async (_req: Request, res: Response) => {
 //chuck these into a function in utils?
 // Listen for the SIGTERM signal and gracefully shut down the application
 process.on("SIGTERM", async () => {
-	console.log("Shutting down server");
+	console.log("shutting down server");
 	await client.end();
 	process.exit(0);
 });
 
 // Listen for the SIGINT signal and gracefully shut down the application
 process.on("SIGINT", async () => {
-	console.log("Shutting down server");
+	console.log("shutting down server");
 	await client.end();
 	process.exit(0);
 });

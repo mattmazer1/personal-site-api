@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const client = new Client({
-	host: process.env.PGHOST,
-	port: process.env.PGPORT ? parseInt(process.env.PGPORT) : undefined,
-	database: process.env.PGDATABASE,
-	user: process.env.PGUSER,
-	password: process.env.PGPASSWORD,
+	host: process.env.PG_HOST,
+	port: process.env.PG_PORT ? parseInt(process.env.PG_PORT) : undefined,
+	database: process.env.PG_DATABASE,
+	user: process.env.PG_USER,
+	password: process.env.PG_PASSWORD,
 });
 
 client.connect((err) => {

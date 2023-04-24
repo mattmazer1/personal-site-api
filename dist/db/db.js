@@ -8,11 +8,11 @@ const pg_1 = require("pg");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const client = new pg_1.Client({
-    host: process.env.PGHOST,
-    port: process.env.PGPORT ? parseInt(process.env.PGPORT) : undefined,
-    database: process.env.PGDATABASE,
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
+    host: process.env.PG_HOST,
+    port: process.env.PG_PORT ? parseInt(process.env.PG_PORT) : undefined,
+    database: process.env.PG_DATABASE,
+    user: process.env.PG_USER,
+    password: process.env.PG_PASSWORD,
 });
 exports.client = client;
 client.connect((err) => {

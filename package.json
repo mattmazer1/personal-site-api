@@ -6,7 +6,7 @@
 	"scripts": {
 		"start": "tsc && nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
 		"lint": "eslint . --ext .ts",
-		"start-prod": "node "
+		"start-prod": "./dist/server.js"
 	},
 	"repository": {
 		"type": "git",

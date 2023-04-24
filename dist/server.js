@@ -12,7 +12,6 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 const resObj = { status: "200" };
 const resCheck = { action: "no action" };
-let totalVisits = 0;
 let storeData = null;
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
@@ -22,31 +21,23 @@ app.get("/test", (res) => {
 });
 app.post("/post/active/user", async (req, res) => {
     try {
-        const data = req.body.data; // need to add type
+        const data = req.body.data;
         const ip = data.ip;
         const time = data.time;
         const date = data.date;
         console.log(data);
-        console.log(storeData);
         if (JSON.stringify(data) === JSON.stringify(storeData)) {
             res.status(200).json(resCheck);
             console.log("Already visited");
             return;
         }
-        totalVisits++;
-        console.log(`Total site visits: ${totalVisits}`);
-        res.status(200).json(resObj); //move this to after query?
-        // res.json(resObj);
-        // res.send(
-        // 	`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
-        // );
-        console.log(`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`);
         storeData = data;
         const values = [ip, time, date];
         const postInfo = `INSERT INTO data(ip,time,date) 
  		VALUES($1, $2, $3);`;
         await db_1.client.query(postInfo, values);
         console.log("Data entry was successful!");
+        res.status(200).json(resObj);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
@@ -64,7 +55,8 @@ app.get("/get/data", async (_req, res) => {
 		FROM data ORDER BY id DESC) subquery;`;
         const { rows } = await db_1.client.query(queryInfo);
         res.send(rows[0].json_build_object);
-        console.log(rows);
+        console.log(rows[0].json_build_object.items);
+        res.status(200).json(resObj);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
@@ -75,13 +67,13 @@ app.get("/get/data", async (_req, res) => {
 //chuck these into a function in utils?
 // Listen for the SIGTERM signal and gracefully shut down the application
 process.on("SIGTERM", async () => {
-    console.log("Shutting down server");
+    console.log("shutting down server");
     await db_1.client.end();
     process.exit(0);
 });
 // Listen for the SIGINT signal and gracefully shut down the application
 process.on("SIGINT", async () => {
-    console.log("Shutting down server");
+    console.log("shutting down server");
     await db_1.client.end();
     process.exit(0);
 });
