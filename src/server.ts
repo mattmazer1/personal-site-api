@@ -13,17 +13,9 @@ interface UserData {
 	time: string;
 	date: string;
 }
-interface ResObj {
-	status: string;
-}
-interface ResCheck {
-	action: string;
-}
+const resObj: { status: string } = { status: "200" };
+const resCheck: { action: string } = { action: "no action" };
 
-const resObj: ResObj = { status: "200" };
-const resCheck: ResCheck = { action: "no action" };
-
-let totalVisits = 0;
 let storeData: UserData | null = null;
 
 app.listen(PORT, () => {
@@ -36,7 +28,7 @@ app.get("/test", (res: Response) => {
 
 app.post("/post/active/user", async (req: Request, res: Response) => {
 	try {
-		const data = req.body.data; // need to add type
+		const data = req.body.data; // need to add type and make object?
 		const ip: string = data.ip;
 		const time: string = data.time;
 		const date: string = data.date;
@@ -50,10 +42,6 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 			return;
 		}
 
-		totalVisits++;
-
-		console.log(`Total site visits: ${totalVisits}`);
-
 		res.status(200).json(resObj); //move this to after query?
 		// res.json(resObj);
 		// res.send(
@@ -61,7 +49,7 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 		// );
 
 		console.log(
-			`Someone visited your site! Location:${ip} Date:${date} Time:${time} Total visits:${totalVisits}`
+			`Someone visited your site! Location:${ip} Date:${date} Time:${time}`
 		);
 		storeData = data;
 
@@ -90,7 +78,7 @@ app.get("/get/data", async (_req: Request, res: Response) => {
 
 		const { rows } = await client.query(queryInfo);
 		res.send(rows[0].json_build_object);
-		console.log(rows);
+		console.log(rows[0].json_build_object.items);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
@@ -99,16 +87,17 @@ app.get("/get/data", async (_req: Request, res: Response) => {
 	}
 });
 
+//chuck these into a function in utils?
 // Listen for the SIGTERM signal and gracefully shut down the application
 process.on("SIGTERM", async () => {
-	console.log("Shutting down server and client connection");
+	console.log("Shutting down server");
 	await client.end();
 	process.exit(0);
 });
 
 // Listen for the SIGINT signal and gracefully shut down the application
 process.on("SIGINT", async () => {
-	console.log("Shutting down server and client connection");
+	console.log("Shutting down server");
 	await client.end();
 	process.exit(0);
 });

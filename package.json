@@ -5,7 +5,8 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"start": "tsc && nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-		"lint": "eslint . --ext .ts"
+		"lint": "eslint . --ext .ts",
+		"start-prod": "node "
 	},
 	"repository": {
 		"type": "git",

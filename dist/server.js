@@ -46,7 +46,6 @@ app.post("/post/active/user", async (req, res) => {
         const postInfo = `INSERT INTO data(ip,time,date) 
  		VALUES($1, $2, $3);`;
         await db_1.client.query(postInfo, values);
-        db_1.client.end();
         console.log("Data entry was successful!");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
@@ -55,18 +54,7 @@ app.post("/post/active/user", async (req, res) => {
         console.log(err);
     }
 });
-const connectDB = async (_req, res, next) => {
-    try {
-        await db_1.client.connect(); // Open connection
-        await next(); // Pass control to route handler
-        await db_1.client.end(); // Close connection
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).send("Internal Server Error");
-    }
-};
-app.get("/get/data", connectDB, async (_req, res) => {
+app.get("/get/data", async (_req, res) => {
     try {
         const queryInfo = `
 		SELECT json_build_object('items', 
@@ -77,11 +65,23 @@ app.get("/get/data", connectDB, async (_req, res) => {
         const { rows } = await db_1.client.query(queryInfo);
         res.send(rows[0].json_build_object);
         console.log(rows);
-        // client.end();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
         res.status(500).json({ message: err.message });
         console.log(err);
     }
+});
+//chuck these into a function in utils?
+// Listen for the SIGTERM signal and gracefully shut down the application
+process.on("SIGTERM", async () => {
+    console.log("Shutting down server");
+    await db_1.client.end();
+    process.exit(0);
+});
+// Listen for the SIGINT signal and gracefully shut down the application
+process.on("SIGINT", async () => {
+    console.log("Shutting down server");
+    await db_1.client.end();
+    process.exit(0);
 });
