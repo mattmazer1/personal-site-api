@@ -1,4 +1,4 @@
-"use strict";
+export {};
 // const validate = () => {
 // 	//library here probs
 // };

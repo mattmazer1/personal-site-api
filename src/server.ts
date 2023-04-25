@@ -1,22 +1,15 @@
 import express from "express";
 import { Request, Response } from "express";
 import cors from "cors";
-import { client } from "./db/db";
+import { client } from "./db/db.js";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-interface UserData {
-	ip: string;
-	time: string;
-	date: string;
-}
 const resObj: { status: string } = { status: "200" };
-const resCheck: { action: string } = { action: "no action" };
-
-let storeData: UserData | null = null;
 
 app.listen(PORT, () => {
 	console.log(`Listening on port ${PORT}`);
@@ -26,7 +19,17 @@ app.get("/test", (res: Response) => {
 	res.send("Connected");
 });
 
-app.post("/post/active/user", async (req: Request, res: Response) => {
+// add this to utils
+// max of 2 requests per minute
+const limiter = rateLimit({
+	windowMs: 120000,
+	max: 1,
+	message: "too many requests sent, please try again 2 minutes",
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
+app.post("/post/active/user", limiter, async (req: Request, res: Response) => {
 	try {
 		const data = req.body.data;
 		const ip: string = data.ip;
@@ -34,14 +37,6 @@ app.post("/post/active/user", async (req: Request, res: Response) => {
 		const date: string = data.date;
 
 		console.log(data);
-
-		if (JSON.stringify(data) === JSON.stringify(storeData)) {
-			res.status(200).json(resCheck);
-			console.log("Already visited");
-			return;
-		}
-
-		storeData = data;
 
 		const values = [ip, time, date];
 		const postInfo = `INSERT INTO data(ip,time,date) 
