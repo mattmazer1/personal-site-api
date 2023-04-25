@@ -19,7 +19,7 @@ app.get("/test", (res: Response) => {
 	res.send("Connected");
 });
 
-// add this to utils
+// add this to middleware
 // max of 2 requests per minute
 const limiter = rateLimit({
 	windowMs: 120000,
@@ -29,29 +29,63 @@ const limiter = rateLimit({
 	legacyHeaders: false,
 });
 
-app.post("/post/active/user", limiter, async (req: Request, res: Response) => {
-	try {
-		const data = req.body.data;
-		const ip: string = data.ip;
-		const time: string = data.time;
-		const date: string = data.date;
+// add this to middleware
+const moment = require("moment-timezone");
 
-		console.log(data);
+const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
 
-		const values = [ip, time, date];
-		const postInfo = `INSERT INTO data(ip,time,date) 
+function validateData(req, res, next) {
+	const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+	if (!ipv4Regex.test(ip)) {
+		console.error(`Invalid IP address: ${ip}`);
+		return res.status(400).send("Invalid IP address");
+	}
+
+	const { date, time } = req.body;
+
+	const dateTimeString = `${date} ${time}`;
+	const dateTime = moment(dateTimeString, "D/M/YY HH:mm");
+
+	if (!dateTime.isValid()) {
+		console.error(`Invalid date and time: ${dateTimeString}`);
+		return res.status(400).send("Invalid date and time");
+	}
+
+	console.log(`IP: ${ip}, Date: ${date}, Time: ${time}`);
+	next();
+}
+
+module.exports = validateData;
+
+app.post(
+	"/post/active/user",
+	limiter,
+	validateData,
+	async (req: Request, res: Response) => {
+		try {
+			const data = req.body.data;
+			const ip: string = data.ip;
+			const time: string = data.time;
+			const date: string = data.date;
+
+			console.log(data);
+
+			const values = [ip, time, date];
+			const postInfo = `INSERT INTO data(ip,time,date) 
  		VALUES($1, $2, $3);`;
 
-		await client.query(postInfo, values);
-		console.log("Data entry was successful!");
-		res.status(200).json(resObj);
+			await client.query(postInfo, values);
+			console.log("Data entry was successful!");
+			res.status(200).json(resObj);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	} catch (err: any) {
-		res.status(500).json({ message: err.message });
-		console.log(err);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (err: any) {
+			res.status(500).json({ message: err.message });
+			console.log(err);
+		}
 	}
-});
+);
 
 app.get("/get/data", async (_req: Request, res: Response) => {
 	try {
@@ -63,8 +97,8 @@ app.get("/get/data", async (_req: Request, res: Response) => {
 		FROM data ORDER BY id DESC) subquery;`;
 
 		const { rows } = await client.query(queryInfo);
-		res.status(200).json(resObj);
-		console.log(rows[0].json_build_object.items);
+		res.send(rows[0].json_build_object);
+		console.log("retrieved data", rows);
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
