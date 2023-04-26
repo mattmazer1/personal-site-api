@@ -34,34 +34,47 @@ app.get("/test", (res: Response) => {
 
 // add this to middleware
 
-function validateIP(ip: string): boolean {
-	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-	return ipPattern.test(ip);
-}
+// function validateIP(ip: string): boolean {
+// 	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+// 	return ipPattern.test(ip);
+// }
 
-function validateData(req: Request, res: Response, next: NextFunction) {
+//utils
+function extractData(req: Request): {
+	data: undefined;
+	ip: string;
+	date: string;
+	time: string;
+} {
 	const data = req.body.data;
 	const ip: string = data.ip;
 	const time: string = data.time;
 	const date: string = data.date;
+	return { data, ip, date, time };
+}
 
-	if (!validateIP(ip)) {
-		console.error(`Invalid IP address: ${ip}`);
-		return res.status(400).send("Invalid IP address");
+function validateData(req: Request, res: Response, next: NextFunction) {
+	try {
+		// const { ip, date, time } = extractData(req);
+		const { date, time } = extractData(req);
+		const validateDate = moment(date, "DD/MM/YY", true);
+		const validateTime = moment(time, "HH:mm", true);
+
+		// if (!validateIP(ip)) {
+		// 	console.error(`Invalid IP address: ${ip}`);
+		// 	return res.status(400).send("Invalid IP address");
+		// }
+
+		if (!validateDate.isValid() || !validateTime.isValid()) {
+			console.error(`Invalid date and time: ${date} ${time}`);
+			return res.status(400).send("Invalid date and time");
+		}
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	} catch (err: any) {
+		res.status(500).json({ message: err.message });
+		console.log(err);
 	}
 
-	// const dateTimeString = `${date} ${time}`;
-	// const dateTime = moment(dateTimeString, "DD/MM/YY HH:mm");
-
-	const validateDate = moment(date, "DD/MM/YY", true);
-	const validateTime = moment(time, "HH:mm", true);
-
-	if (!validateDate.isValid() || !validateTime.isValid()) {
-		console.error(`Invalid date and time: ${date} ${time}`);
-		return res.status(400).send("Invalid date and time");
-	}
-
-	console.log(`IP: ${ip}, Date: ${date}, Time: ${time}`);
 	next();
 }
 
@@ -72,13 +85,8 @@ app.post(
 	validateData,
 	async (req: Request, res: Response) => {
 		try {
-			const data = req.body.data;
-			const ip: string = data.ip;
-			const time: string = data.time;
-			const date: string = data.date;
-
-			// console.log(data)
-			console.log(data, ip, time, date);
+			const { data } = extractData(req);
+			console.log(data);
 
 			// 	const values = [ip, time, date];
 			// 	const postInfo = `INSERT INTO data(ip,time,date)

@@ -29,35 +29,40 @@ function validateIP(ip) {
     const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
     return ipPattern.test(ip);
 }
-function validateData(req, res, next) {
+//utils
+function extractData(req) {
     const data = req.body.data;
     const ip = data.ip;
     const time = data.time;
     const date = data.date;
-    if (!validateIP(ip)) {
-        console.error(`Invalid IP address: ${ip}`);
-        return res.status(400).send("Invalid IP address");
+    return { data, ip, date, time };
+}
+function validateData(req, res, next) {
+    try {
+        const { ip, date, time } = extractData(req);
+        const validateDate = moment(date, "DD/MM/YY", true);
+        const validateTime = moment(time, "HH:mm", true);
+        if (!validateIP(ip)) {
+            console.error(`Invalid IP address: ${ip}`);
+            return res.status(400).send("Invalid IP address");
+        }
+        if (!validateDate.isValid() || !validateTime.isValid()) {
+            console.error(`Invalid date and time: ${date} ${time}`);
+            return res.status(400).send("Invalid date and time");
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
-    // const dateTimeString = `${date} ${time}`;
-    // const dateTime = moment(dateTimeString, "DD/MM/YY HH:mm");
-    const validateDate = moment(date, "D/M/YY");
-    const validateTime = moment(time, "HH:mm");
-    if (!validateDate.isValid() && !validateTime.isValid()) {
-        console.error(`Invalid date and time: ${date} ${time}`);
-        return res.status(400).send("Invalid date and time");
+    catch (err) {
+        res.status(500).json({ message: err.message });
+        console.log(err);
     }
-    console.log(`IP: ${ip}, Date: ${date}, Time: ${time}`);
     next();
 }
 // module.exports = validateData;
 app.post("/post/active/user", validateData, async (req, res) => {
     try {
-        const data = req.body.data;
-        const ip = data.ip;
-        const time = data.time;
-        const date = data.date;
-        // console.log(data)
-        console.log(data, ip, time, date);
+        const { data } = extractData(req);
+        console.log(data);
         // 	const values = [ip, time, date];
         // 	const postInfo = `INSERT INTO data(ip,time,date)
         // VALUES($1, $2, $3);`;
