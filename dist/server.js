@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { client } from "./db/db.js";
-// import rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import moment from "moment";
 import "moment-timezone";
 const app = express();
@@ -16,14 +16,14 @@ app.get("/test", (res) => {
     res.send("Connected");
 });
 // add this to middleware
-// max of 2 requests per minute
-// const limiter = rateLimit({
-// 	windowMs: 120000, // change to every 5 minutes?
-// 	max: 1,
-// 	message: "too many requests sent, please try again 2 minutes",
-// 	standardHeaders: true,
-// 	legacyHeaders: false,
-// });
+// max of 1 requests every 5 minutes
+const limiter = rateLimit({
+    windowMs: 300000,
+    max: 1,
+    message: "too many requests sent, please try again 5 minutes",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 // add this to middleware
 function validateIP(ip) {
     const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -59,14 +59,14 @@ function validateData(req, res, next) {
     next();
 }
 // module.exports = validateData;
-app.post("/post/active/user", validateData, async (req, res) => {
+app.post("/post/active/user", limiter, validateData, async (req, res) => {
     try {
-        const { data } = extractData(req);
+        const { data, ip, time, date } = extractData(req);
         console.log(data);
-        // 	const values = [ip, time, date];
-        // 	const postInfo = `INSERT INTO data(ip,time,date)
-        // VALUES($1, $2, $3);`;
-        // 	await client.query(postInfo, values);
+        const values = [ip, time, date];
+        const postInfo = `INSERT INTO data(ip,time,date)
+			VALUES($1, $2, $3);`;
+        await client.query(postInfo, values);
         console.log("Data entry was successful!");
         res.status(200).json(resObj);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

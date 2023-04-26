@@ -2,7 +2,7 @@ import express from "express";
 import { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { client } from "./db/db.js";
-// import rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import moment from "moment";
 import "moment-timezone";
 
@@ -22,22 +22,20 @@ app.get("/test", (res: Response) => {
 });
 
 // add this to middleware
-// max of 2 requests per minute
-
-// const limiter = rateLimit({
-// 	windowMs: 120000, // change to every 5 minutes?
-// 	max: 1,
-// 	message: "too many requests sent, please try again 2 minutes",
-// 	standardHeaders: true,
-// 	legacyHeaders: false,
-// });
+// max of 1 requests every 5 minutes
+const limiter = rateLimit({
+	windowMs: 300000,
+	max: 1,
+	message: "too many requests sent, please try again 5 minutes",
+	standardHeaders: true,
+	legacyHeaders: false,
+});
 
 // add this to middleware
-
-// function validateIP(ip: string): boolean {
-// 	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-// 	return ipPattern.test(ip);
-// }
+function validateIP(ip: string): boolean {
+	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+	return ipPattern.test(ip);
+}
 
 //utils
 function extractData(req: Request): {
@@ -55,15 +53,14 @@ function extractData(req: Request): {
 
 function validateData(req: Request, res: Response, next: NextFunction) {
 	try {
-		// const { ip, date, time } = extractData(req);
-		const { date, time } = extractData(req);
+		const { ip, date, time } = extractData(req);
 		const validateDate = moment(date, "DD/MM/YY", true);
 		const validateTime = moment(time, "HH:mm", true);
 
-		// if (!validateIP(ip)) {
-		// 	console.error(`Invalid IP address: ${ip}`);
-		// 	return res.status(400).send("Invalid IP address");
-		// }
+		if (!validateIP(ip)) {
+			console.error(`Invalid IP address: ${ip}`);
+			return res.status(400).send("Invalid IP address");
+		}
 
 		if (!validateDate.isValid() || !validateTime.isValid()) {
 			console.error(`Invalid date and time: ${date} ${time}`);
@@ -82,17 +79,18 @@ function validateData(req: Request, res: Response, next: NextFunction) {
 
 app.post(
 	"/post/active/user",
+	limiter,
 	validateData,
 	async (req: Request, res: Response) => {
 		try {
-			const { data } = extractData(req);
+			const { data, ip, time, date } = extractData(req);
 			console.log(data);
 
-			// 	const values = [ip, time, date];
-			// 	const postInfo = `INSERT INTO data(ip,time,date)
-			// VALUES($1, $2, $3);`;
+			const values = [ip, time, date];
 
-			// 	await client.query(postInfo, values);
+			const postInfo = `INSERT INTO data(ip,time,date)
+			VALUES($1, $2, $3);`;
+			await client.query(postInfo, values);
 			console.log("Data entry was successful!");
 			res.status(200).json(resObj);
 
