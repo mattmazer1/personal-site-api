@@ -1,8 +1,10 @@
 import express from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { client } from "./db/db.js";
-import rateLimit from "express-rate-limit";
+// import rateLimit from "express-rate-limit";
+import moment from "moment";
+import "moment-timezone";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,34 +23,41 @@ app.get("/test", (res: Response) => {
 
 // add this to middleware
 // max of 2 requests per minute
-const limiter = rateLimit({
-	windowMs: 120000,
-	max: 1,
-	message: "too many requests sent, please try again 2 minutes",
-	standardHeaders: true,
-	legacyHeaders: false,
-});
+
+// const limiter = rateLimit({
+// 	windowMs: 120000, // change to every 5 minutes?
+// 	max: 1,
+// 	message: "too many requests sent, please try again 2 minutes",
+// 	standardHeaders: true,
+// 	legacyHeaders: false,
+// });
 
 // add this to middleware
-const moment = require("moment-timezone");
 
-const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+function validateIP(ip: string): boolean {
+	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+	return ipPattern.test(ip);
+}
 
-function validateData(req, res, next) {
-	const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+function validateData(req: Request, res: Response, next: NextFunction) {
+	const data = req.body.data;
+	const ip: string = data.ip;
+	const time: string = data.time;
+	const date: string = data.date;
 
-	if (!ipv4Regex.test(ip)) {
+	if (!validateIP(ip)) {
 		console.error(`Invalid IP address: ${ip}`);
 		return res.status(400).send("Invalid IP address");
 	}
 
-	const { date, time } = req.body;
+	// const dateTimeString = `${date} ${time}`;
+	// const dateTime = moment(dateTimeString, "DD/MM/YY HH:mm");
 
-	const dateTimeString = `${date} ${time}`;
-	const dateTime = moment(dateTimeString, "D/M/YY HH:mm");
+	const validateDate = moment(date, "DD/MM/YY", true);
+	const validateTime = moment(time, "HH:mm", true);
 
-	if (!dateTime.isValid()) {
-		console.error(`Invalid date and time: ${dateTimeString}`);
+	if (!validateDate.isValid() || !validateTime.isValid()) {
+		console.error(`Invalid date and time: ${date} ${time}`);
 		return res.status(400).send("Invalid date and time");
 	}
 
@@ -56,11 +65,10 @@ function validateData(req, res, next) {
 	next();
 }
 
-module.exports = validateData;
+// module.exports = validateData;
 
 app.post(
 	"/post/active/user",
-	limiter,
 	validateData,
 	async (req: Request, res: Response) => {
 		try {
@@ -69,13 +77,14 @@ app.post(
 			const time: string = data.time;
 			const date: string = data.date;
 
-			console.log(data);
+			// console.log(data)
+			console.log(data, ip, time, date);
 
-			const values = [ip, time, date];
-			const postInfo = `INSERT INTO data(ip,time,date) 
- 		VALUES($1, $2, $3);`;
+			// 	const values = [ip, time, date];
+			// 	const postInfo = `INSERT INTO data(ip,time,date)
+			// VALUES($1, $2, $3);`;
 
-			await client.query(postInfo, values);
+			// 	await client.query(postInfo, values);
 			console.log("Data entry was successful!");
 			res.status(200).json(resObj);
 
