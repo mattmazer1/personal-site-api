@@ -1,4 +1,7 @@
+import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
+import moment from "moment";
+import { extractData } from "../utils/utils.js";
 
 // max of 1 requests every 5 minutes
 const limiter = rateLimit({
@@ -9,13 +12,17 @@ const limiter = rateLimit({
 	legacyHeaders: false,
 });
 
-// add this to middleware
 function validateIP(ip: string): boolean {
 	const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
 	return ipPattern.test(ip);
 }
 
-function validateData(req: Request, res: Response, next: NextFunction) {
+function validateData(
+	req: Request,
+	res: Response,
+	next: NextFunction
+): Response | void {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any{
 	try {
 		const { ip, date, time } = extractData(req);
 		const validateDate = moment(date, "DD/MM/YY", true);

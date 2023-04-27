@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { client } from "../db/db.js";
 
 const resObj: { status: string } = { status: "200" };
 
@@ -15,4 +16,22 @@ function extractData(req: Request): {
 	return { data, ip, date, time };
 }
 
-export { extractData, resObj };
+// Listen for the SIGTERM signal and gracefully shut down the application
+function sigTerm(): void {
+	process.on("SIGTERM", async () => {
+		console.log("shutting down server");
+		await client.end();
+		process.exit(0);
+	});
+}
+
+// Listen for the SIGINT signal and gracefully shut down the application
+function sigInt(): void {
+	process.on("SIGINT", async () => {
+		console.log("shutting down server");
+		await client.end();
+		process.exit(0);
+	});
+}
+
+export { extractData, resObj, sigTerm, sigInt };
