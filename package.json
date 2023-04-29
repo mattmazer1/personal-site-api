@@ -5,9 +5,9 @@
 	"type": "module",
 	"main": "dist/server.js",
 	"scripts": {
-		"start": "tsc && nodemon --watch 'src/**/*.ts' --exec 'ts-node' --esm src/server.ts",
+		"dev-start": "tsc && nodemon --watch 'src/**/*.ts' --exec 'ts-node' --esm src/server.ts",
 		"lint": "eslint . --ext .ts",
-		"start-prod": "./dist/server.js"
+		"start": "./dist/server.js"
 	},
 	"repository": {
 		"type": "git",
