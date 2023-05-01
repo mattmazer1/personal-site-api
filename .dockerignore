@@ -1,8 +1,11 @@
 node_modules
-dockerfile
+Dockerfile
+.dockerignore
 .eslintignore
-.eslintrc.js
+.eslintrc.cjs
+tsconfig.json
 .git
 .gitignore
-.config
 README.md
+dist
+.env

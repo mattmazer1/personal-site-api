@@ -4,7 +4,7 @@ WORKDIR /api
 
 COPY package*.json yarn.lock ./
 
-RUN yarn install
+RUN yarn install --production
 
 COPY . .
 
@@ -20,10 +20,8 @@ FROM alpine:latest
 
 WORKDIR /newapi
 
-RUN yarn install --production
-
 COPY --from=build /api/dist ./dist
 
 EXPOSE 3000 
 
-CMD ["yarn", "start"]
+CMD [node /dist/server.js]
