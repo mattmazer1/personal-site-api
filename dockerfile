@@ -1,12 +1,14 @@
-FROM node1.18:lts-alpine
+FROM node:16-alpine as build
 
 WORKDIR /api
 
-COPY package*.json ./
+COPY package*.json yarn.lock ./
 
 RUN yarn install
 
 COPY . .
+
+RUN yarn build 
 
 ENV PG_HOST=pg_host
 ENV PG_PORT=pg_port
@@ -18,9 +20,9 @@ FROM alpine:latest
 
 WORKDIR /newapi
 
-COPY --from=BUILD /api/exec /newapi/
+RUN yarn install --production
 
-RUN apk update && apk add 
+COPY --from=build /api/dist ./dist
 
 EXPOSE 3000 
 

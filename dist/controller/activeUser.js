@@ -5,7 +5,7 @@ async function postUser(req, res) {
         const { data, ip, time, date } = extractData(req);
         console.log(data);
         const values = [ip, time, date];
-        const postInfo = `INSERT INTO data1(ip,time,date)
+        const postInfo = `INSERT INTO data(ip,time,date)
 			VALUES($1, $2, $3);`;
         await client.query(postInfo, values);
         console.log("Data entry was successful!");

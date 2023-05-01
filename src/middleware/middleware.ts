@@ -22,7 +22,7 @@ function validateData(
 	res: Response,
 	next: NextFunction
 ): Response | void {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any{
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	try {
 		const { ip, date, time } = extractData(req);
 		const validateDate = moment(date, "DD/MM/YY", true);

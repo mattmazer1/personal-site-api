@@ -15,7 +15,7 @@ FROM data ORDER BY id DESC) subquery;`;
 		console.log("retrieved data", rows);
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} catch (err: any) {
-		// res.status(500).json({ message: err.message });
+		res.status(500).json({ message: err.message });
 		console.log(err);
 	}
 }

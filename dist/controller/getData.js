@@ -1,5 +1,5 @@
 import { client } from "../db/db.js";
-async function fetchData(res) {
+async function fetchData(_req, res) {
     try {
         const queryInfo = `
 SELECT json_build_object('items', 
@@ -8,12 +8,12 @@ json_build_object('ip', ip, 'time', time, 'date', date)
 ))) FROM (SELECT ip, time, date
 FROM data ORDER BY id DESC) subquery;`;
         const { rows } = await client.query(queryInfo);
-        res.send(rows[0].json_build_object);
+        res.status(200).send(rows[0].json_build_object);
         console.log("retrieved data", rows);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (err) {
-        // res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message });
         console.log(err);
     }
 }
