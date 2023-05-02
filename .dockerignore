@@ -3,7 +3,6 @@ Dockerfile
 .dockerignore
 .eslintignore
 .eslintrc.cjs
-tsconfig.json
 .git
 .gitignore
 README.md
