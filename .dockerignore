@@ -1,0 +1,11 @@
+node_modules
+Dockerfile
+.dockerignore
+.eslintignore
+.eslintrc.cjs
+.git
+.gitignore
+README.md
+.env
+yarn.lock
+serverless.yml
